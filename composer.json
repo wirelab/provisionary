@@ -1,0 +1,12 @@
+{
+    "name": "wirelab/provisionary",
+    "description": "Provision AWS assets with ease",
+    "type": "application",
+    "authors": [
+        {
+            "name": "Len van Essen",
+            "email": "len@vanessen.io"
+        }
+    ],
+    "require": {}
+}
