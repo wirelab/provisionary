@@ -55,7 +55,7 @@ class S3Command extends Command
         }
 
         // Call for configuration of aws client profile
-        $output->writeln('The tool will add your newly created aws account as a separate profile');
+        $output->writeln('<comment>The tool will ask to configure AWS, if you have already configured a profile with the given name just hit enter a couple of times</comment>');
         $process = Process::fromShellCommandline('aws configure --profile ' . $input->getArgument('name'));
         $process->setTty(true);
         $process->start();
