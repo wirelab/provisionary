@@ -8,5 +8,17 @@
             "email": "len@vanessen.io"
         }
     ],
-    "require": {}
+    "require": {
+        "php": "^7.3",
+        "symfony/console": "^4.0|^5.0",
+        "symfony/process": "^4.2|^5.0",
+        "aws/aws-sdk-php": "^3.158"
+    },
+    "autoload": {
+        "psr-4": {
+            "Wirelab\\Provisionary\\Console\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
