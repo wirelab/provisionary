@@ -2,6 +2,7 @@
     "name": "wirelab/provisionary",
     "description": "Provision AWS assets with ease",
     "type": "application",
+    "license": "MIT",
     "authors": [
         {
             "name": "Len van Essen",
