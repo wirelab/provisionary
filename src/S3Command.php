@@ -28,10 +28,12 @@ class S3Command extends Command
 
     protected $createdUsers = [];
 
+    protected $accessKeys = [];
+
     protected $hasError = false;
 
     /** @var SymfonyStyle */
-    protected $interface;
+    protected $io;
 
     /**
      * {@inheritDoc}
@@ -53,7 +55,7 @@ class S3Command extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->interface = new SymfonyStyle($input, $output);
+        $this->io = new SymfonyStyle($input, $output);
 
         if($input->getOption('cloudfront')) {
             // TODO Cloudfront
@@ -62,18 +64,18 @@ class S3Command extends Command
         // TODO check if aws is installed
 
         // Configure profile
-        $this->profile = $this->interface
+        $this->profile = $this->io
             ->ask("Which AWS profile should we use? (defaults to {$this->profile})", $this->profile);
 
         // Call for configuration of aws client profile
-        $this->interface->note('The tool will ask to configure AWS, if you have already configured a profile with the given name just hit enter a couple of times');
+        $this->io->note('The tool will ask to configure AWS, if you have already configured a profile with the given name just hit enter a couple of times');
         $process = Process::fromShellCommandline('aws configure --profile ' . $this->profile);
         $process->setTty(true);
         $process->start();
         $process->wait();
 
         // Ask for region
-        $this->region = $this->interface
+        $this->region = $this->io
             ->ask("Please enter the region of choice for the buckets (defaults to {$this->region}) ", $this->region);
 
         // Setup s3 client
@@ -81,7 +83,7 @@ class S3Command extends Command
         $this->setupIamClient();
 
         // To separate or not to separate
-        $separateEnvs = $this->interface
+        $separateEnvs = $this->io
             ->confirm('Do you want to create separate buckets for dev/acceptance/production?', true);
 
         foreach (($separateEnvs ? ['dev', 'acceptance', 'production'] : ['shared']) as $environment) {
@@ -91,15 +93,34 @@ class S3Command extends Command
 
             $this->createUser($name);
             $this->attachPolicy($name);
+
+            $this->createAccessKeys($name);
         }
+
+        // Show access keys
+        $this->io->title('Voila, your keys:');
+        $this->io->table(['User', 'Access Key', 'Access Key Secret'], $this->accessKeys);
 
         // Cleanup created resources
         if($input->getOption('cleanup') || $this->hasError) {
-            $this->interface->note('Run cleanup as flag was passed or an error was caught creating resources');
+            $this->io->note('Run cleanup as flag was passed or an error was caught creating resources');
             $this->cleanup();
         }
 
         return 1;
+    }
+
+    protected function createAccessKeys(string $username)
+    {
+        $result = $this->call($this->iamClient, 'createAccessKey', [
+            'UserName' => $username
+        ]);
+
+        if($result) $this->accessKeys[] = [
+            $username,
+            $result['AccessKey']['AccessKeyId'],
+            $result['AccessKey']['SecretAccessKey']
+        ];
     }
 
     /**
@@ -143,6 +164,13 @@ class S3Command extends Command
 
     protected function cleanup()
     {
+        foreach($this->accessKeys as $key) {
+            $this->call($this->iamClient, 'deleteAccessKey', [
+                'UserName' => $key[0],
+                'AccessKeyId' => $key[1]
+            ]);
+        }
+
         foreach($this->createdUsers as $user) {
             $this->call($this->iamClient, 'detachUserPolicy', [
                 'UserName' => $user,
@@ -209,13 +237,13 @@ class S3Command extends Command
         try {
             $result = $client->{$method}($data);
 
-            $this->interface->writeln("Successfully called $method for resource with data");
+            $this->io->writeln("Successfully called $method for resource with data");
 
             return $result;
         } catch (AwsException $e) {
-            $this->interface->error("Error calling $method");
-            $this->interface->writeln($e->getAwsErrorMessage());
-            $this->interface->writeln($e->getMessage());
+            $this->io->error("Error calling $method");
+            $this->io->writeln($e->getAwsErrorMessage());
+            $this->io->writeln($e->getMessage());
             $this->hasError = true;
         }
     }
