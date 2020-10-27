@@ -140,7 +140,7 @@ class S3Command extends Command
             'PolicyArn' => $this->createdPolicies[$name]['Arn']
         ]);
     }
-    
+
     protected function cleanup()
     {
         foreach($this->createdUsers as $user) {
@@ -167,10 +167,9 @@ class S3Command extends Command
         }
     }
 
+
     /**
      * @param string $name
-     * @param InputInterface $input
-     * @param OutputInterface $output
      */
     protected function createUser(string $name)
     {
@@ -203,8 +202,7 @@ class S3Command extends Command
      * @param $client
      * @param string $method
      * @param array $data
-     * @param InputInterface $input
-     * @param OutputInterface $output
+     * @return mixed
      */
     protected function call($client, string $method, array $data)
     {
