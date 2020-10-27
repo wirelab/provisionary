@@ -20,6 +20,9 @@
             "Wirelab\\Provisionary\\Console\\": "src/"
         }
     },
+    "bin": [
+        "bin/provisionary"
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true
 }
