@@ -19,7 +19,7 @@ Optionally, you can add a --clean flag which will delete the created resources i
 
 ## License
 
-Laravel Installer is open-sourced software licensed under the [MIT license](LICENSE.md).
+Provisionary is open-sourced software licensed under the [MIT license](LICENSE.md).
 
 # TODO
 - Include Cloudfront set-up
